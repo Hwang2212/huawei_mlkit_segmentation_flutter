@@ -43,7 +43,7 @@ class MainActivity: FlutterActivity() {
                      Log.i("Pytorch: Main activity", "Enter 1")
 
                      val boffset = call.argument<Int>("data_offset")
-                     Log.i("Pytorch: Main activity", "Enter 2")
+                     Log.i("Pytorch: Main activity", boffset.toString())
 
                      val blenght = call.argument<Int>("data_length")
                      Log.i("Pytorch: Main activity", "Enter 3")
