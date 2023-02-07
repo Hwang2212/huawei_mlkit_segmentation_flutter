@@ -1,5 +1,15 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
+
+import 'dart:io';
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
+import 'package:path/path.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:widget_mask/widget_mask.dart';
+import 'dart:typed_data';
 
 void main() {
   runApp(const MyApp());
@@ -33,14 +43,64 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   static const platform = MethodChannel("com.pytorch");
 
-  int _counter = 0;
   String caller = '';
+  String imagePath = '';
+  String documentsPath = '';
 
   void _incrementCounter() async {
     String val = await platform.invokeMethod("Print");
     setState(() {
       caller = val;
     });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _gettingModelFile().then((void value) => log('File Created Successfuly'));
+  }
+
+  Future<void> _gettingModelFile() async {
+    final Directory directory = await getApplicationDocumentsDirectory();
+
+    setState(() {
+      documentsPath = directory.path;
+    });
+
+    final String u2netmodel =
+        join(directory.path, 'u2netp_small_live_test.ptl');
+    final ByteData data =
+        await rootBundle.load('assets/u2netp_small_live_test.ptl');
+
+    final List<int> bytes =
+        data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
+
+    if (!File(u2netmodel).existsSync()) {
+      await File(u2netmodel).writeAsBytes(bytes);
+    }
+  }
+
+  Future<void> _getSegmentation() async {
+    final ByteData imageData = await rootBundle.load("assets/test.jpeg");
+    try {
+      final String result = await platform.invokeMethod(
+        'segment_image',
+        <String, dynamic>{
+          'model_path': '$documentsPath/u2netp_small_live_test.ptl',
+          'image_data': imageData.buffer
+              .asUint8List(imageData.offsetInBytes, imageData.lengthInBytes),
+          'data_offset': imageData.offsetInBytes,
+          'data_length': imageData.lengthInBytes
+        },
+      );
+      setState(() {
+        imagePath = result;
+      });
+      // final Uint8List byte = Uint8List.fromList(result.toList());
+      log("SUCESS ${result.toString()}");
+    } catch (e) {
+      log("ERROR ${e.toString()}");
+    }
   }
 
   @override
@@ -54,20 +114,34 @@ class _MyHomePageState extends State<MyHomePage> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             const Text(
-              'You have pushed the button this many times:',
+              'You have pushed the button this testy times:',
             ),
-            Text(
-              caller,
-              style: Theme.of(context).textTheme.headline4,
-            ),
+            buildImage(),
           ],
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
+        onPressed: _getSegmentation,
         tooltip: 'Increment',
         child: const Icon(Icons.add),
       ),
     );
+  }
+
+  Widget buildImage() {
+    if (imagePath != "") {
+      return Container(
+        padding: EdgeInsets.all(8),
+        color: Colors.red,
+        child: WidgetMask(
+            blendMode: BlendMode.darken,
+            childSaveLayer: true,
+            child: Image.file(File(imagePath)),
+            mask: Image.asset("assets/test.jpeg")),
+      );
+      return Image.file(File(imagePath));
+    } else {
+      return SizedBox.shrink();
+    }
   }
 }
