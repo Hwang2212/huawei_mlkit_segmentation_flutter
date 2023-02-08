@@ -24,6 +24,13 @@ import java.io.File
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream
 import java.io.IOException
+import com.huawei.hms.mlsdk.MLAnalyzerFactory
+import com.huawei.hms.mlsdk.common.MLApplication
+import com.huawei.hms.mlsdk.common.MLFrame
+import com.huawei.hms.mlsdk.imgseg.MLImageSegmentation
+import com.huawei.hms.mlsdk.imgseg.MLImageSegmentationAnalyzer
+import com.huawei.hms.mlsdk.imgseg.MLImageSegmentationScene
+import com.huawei.hms.mlsdk.imgseg.MLImageSegmentationSetting
 import kotlin.concurrent.thread
 
 class MainActivity: FlutterActivity() {
@@ -35,7 +42,7 @@ class MainActivity: FlutterActivity() {
                     println("Success")
                 val string = "Hi"
                 result.success(string)
-            } else if(call.method == "segment_image"){
+            } else if(call.method == "pytorch_segment"){
                 
                  try {
                      Log.i("Pytorch: Main activity", "Enter")
@@ -103,12 +110,95 @@ class MainActivity: FlutterActivity() {
                      Log.e("Pytorch: Main activity", "Error reading", e)
                  }
 
+            }else if(call.method == "huawei_segment"){
+                val REGION_DR_SINGAPORE :Int = 1007
+                MLApplication.getInstance().setUserRegion(REGION_DR_SINGAPORE);
+//                // Method 1: Use default parameter settings to configure the image segmentation analyzer.
+//                // The default mode is human body segmentation in fine mode. All segmentation results of human body segmentation are returned (pixel-level label information, human body image with a transparent background, gray-scale image with a white human body and black background, and an original image for segmentation).
+//                var analyzer = MLAnalyzerFactory.getInstance().imageSegmentationAnalyzer
+//
+//                // Method 2: Use MLImageSegmentationSetting to customize the image segmentation analyzer.
+                var setting = MLImageSegmentationSetting.Factory() // Set whether to support fine segmentation. The value true indicates fine segmentation, and the value false indicates fast segmentation.
+                    .setExact(false) // Set the human body segmentation mode.
+                    .setAnalyzerType(MLImageSegmentationSetting.BODY_SEG) // Set returned result types.
+                    .setScene(MLImageSegmentationScene.FOREGROUND_ONLY)
+                    .create()
+                // var analyzer = MLAnalyzerFactory.getInstance().getImageSegmentationAnalyzer(setting)
             }
             else {
                 result.notImplemented()
             }
         }
     }
+
+    fun bitmapToFloatArray(bitmap: Bitmap):
+                Array<Array<Array<FloatArray>>> {
+            
+            val width: Int = bitmap.width
+            val height: Int = bitmap.height
+            val intValues = IntArray(width * height)
+            bitmap.getPixels(intValues, 0, width, 0, 0, width, height)
+
+            // Create aa array to find the maximum value
+            val fourDimensionalArray = Array(1) {
+                Array(320) {
+                    Array(320) {
+                        FloatArray(3)
+                    }
+                }
+            }
+            // https://github.com/xuebinqin/U-2-Net/blob/f2b8e4ac1c4fbe90daba8707bca051a0ec830bf6/data_loader.py#L204
+            for (i in 0 until width - 1) {
+                for (j in 0 until height - 1) {
+                    val pixelValue: Int = intValues[i * width + j]
+                    fourDimensionalArray[0][i][j][0] =
+                        Color.red(pixelValue)
+                            .toFloat()
+                    fourDimensionalArray[0][i][j][1] =
+                        Color.green(pixelValue)
+                            .toFloat()
+                    fourDimensionalArray[0][i][j][2] =
+                        Color.blue(pixelValue).toFloat()
+                }
+
+            }
+            // Convert multidimensional array to 1D
+            val oneDFloatArray = ArrayList<Float>()
+
+            for (m in fourDimensionalArray[0].indices) {
+                for (x in fourDimensionalArray[0][0].indices) {
+                    for (y in fourDimensionalArray[0][0][0].indices) {
+                        oneDFloatArray.add(fourDimensionalArray[0][m][x][y])
+                    }
+                }
+            }
+
+            val maxValue: Float = oneDFloatArray.maxOrNull() ?: 0f
+            //val minValue: Float = oneDFloatArray.minOrNull() ?: 0f
+
+            // Final array that is going to be used with interpreter
+            val finalFourDimensionalArray = Array(1) {
+                Array(320) {
+                    Array(320) {
+                        FloatArray(3)
+                    }
+                }
+            }
+            for (i in 0 until width - 1) {
+                for (j in 0 until height - 1) {
+                    val pixelValue: Int = intValues[i * width + j]
+                    finalFourDimensionalArray[0][i][j][0] =
+                        ((Color.red(pixelValue).toFloat() / maxValue) - 0.485f) / 0.229f
+                    finalFourDimensionalArray[0][i][j][1] =
+                        ((Color.green(pixelValue).toFloat() / maxValue) - 0.456f) / 0.224f
+                    finalFourDimensionalArray[0][i][j][2] =
+                        ((Color.blue(pixelValue).toFloat() / maxValue) - 0.406f) / 0.225f
+                }
+
+            }
+
+            return finalFourDimensionalArray
+        }
 
     private fun saveJPGE_After(bitmap: Bitmap, path: String) {
 

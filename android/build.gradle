@@ -4,11 +4,14 @@ buildscript {
         google()
         jcenter()
         mavenCentral()
+        // Configure the Maven repository address for the HMS Core SDK.
+        maven { url 'https://developer.huawei.com/repo/' }
     }
 
     dependencies {
         classpath 'com.android.tools.build:gradle:7.1.2'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+        classpath 'com.huawei.agconnect:agcp:1.4.1.300'
         
     }
 }
@@ -18,6 +21,8 @@ allprojects {
         google()
         jcenter()
         mavenCentral()
+        // Configure the Maven repository address for the HMS Core SDK.
+        maven { url 'https://developer.huawei.com/repo/' }
     }
 }
 

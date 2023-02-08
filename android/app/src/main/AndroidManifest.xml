@@ -21,6 +21,10 @@
               android:name="io.flutter.embedding.android.NormalTheme"
               android:resource="@style/NormalTheme"
               />
+<!--            For Huawei ML KIt Auto Updates-->
+            <meta-data
+                android:name="com.huawei.hms.ml.DEPENDENCY"
+                android:value= "imgseg"/>
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
