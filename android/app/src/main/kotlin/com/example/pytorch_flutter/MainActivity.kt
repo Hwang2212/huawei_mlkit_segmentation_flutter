@@ -123,7 +123,7 @@ class MainActivity: FlutterActivity() {
                     .setAnalyzerType(MLImageSegmentationSetting.BODY_SEG) // Set returned result types.
                     .setScene(MLImageSegmentationScene.FOREGROUND_ONLY)
                     .create()
-                // var analyzer = MLAnalyzerFactory.getInstance().getImageSegmentationAnalyzer(setting)
+                var analyzer = MLAnalyzerFactory.getInstance().getImageSegmentationAnalyzer(setting)
             }
             else {
                 result.notImplemented()

@@ -101,9 +101,9 @@ dependencies {
     // Import the base SDK.
     implementation 'com.huawei.hms:ml-computer-vision-segmentation:3.7.0.302'
     // Import the multiclass segmentation model package.
-    implementation 'com.huawei.hms:ml-computer-vision-image-segmentation-multiclass-model:3.7.0.302'
+    // implementation 'com.huawei.hms:ml-computer-vision-image-segmentation-multiclass-model:3.7.0.302'
     // Import the human body segmentation model package.
-//    implementation 'com.huawei.hms:ml-computer-vision-image-segmentation-body-model:3.7.0.302'
+   implementation 'com.huawei.hms:ml-computer-vision-image-segmentation-body-model:3.7.0.302'
 //    // Import the hair segmentation model package.
 //    implementation 'com.huawei.hms:ml-computer-vision-image-segmentation-hair-model:3.7.0.302'
 }
