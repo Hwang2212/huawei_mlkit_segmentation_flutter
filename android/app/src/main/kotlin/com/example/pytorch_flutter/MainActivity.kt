@@ -113,6 +113,19 @@ class MainActivity: FlutterActivity() {
             }else if(call.method == "huawei_segment"){
                 val REGION_DR_SINGAPORE :Int = 1007
                 MLApplication.getInstance().setUserRegion(REGION_DR_SINGAPORE);
+                val boffset = call.argument<Int>("data_offset")
+
+                val blenght = call.argument<Int>("data_length")
+
+
+                val nonNullbOffset = boffset!!
+
+                val nonNullbLenght = blenght!!
+
+
+                val byteStream = call.argument<ByteArray>("image_data")
+
+                val segbitmap = BitmapFactory.decodeByteArray(byteStream, nonNullbOffset, nonNullbLenght)
 //                // Method 1: Use default parameter settings to configure the image segmentation analyzer.
 //                // The default mode is human body segmentation in fine mode. All segmentation results of human body segmentation are returned (pixel-level label information, human body image with a transparent background, gray-scale image with a white human body and black background, and an original image for segmentation).
 //                var analyzer = MLAnalyzerFactory.getInstance().imageSegmentationAnalyzer
@@ -124,12 +137,30 @@ class MainActivity: FlutterActivity() {
                     .setScene(MLImageSegmentationScene.FOREGROUND_ONLY)
                     .create()
                 var analyzer = MLAnalyzerFactory.getInstance().getImageSegmentationAnalyzer(setting)
+                val mlFrame = MLFrame.fromBitmap(segbitmap)
+//                Synchronous Call for Huawei
+//                val segmentationResult = analyzer.analyseFrame(mlFrame)
+
+                analyzer.asyncAnalyseFrame(mlFrame)
+                    .addOnSuccessListener {
+                        val outputBitmap:Bitmap = it.getForeground()
+                        val rootDirectory : String = getActivity().getFilesDir().toString()+"/temp_bitmap"
+                        Log.i("Huawei ML Kit", "Success")
+                        result.success(rootDirectory)
+
+                        saveJPGE_After(outputBitmap, rootDirectory)
+                    }
+                    .addOnFailureListener {
+                        Log.e("ERROR HUAWEI", "analyse -> asyncAnalyseFrame: ", it)
+                    }
             }
             else {
                 result.notImplemented()
             }
         }
     }
+
+
 
     fun bitmapToFloatArray(bitmap: Bitmap):
                 Array<Array<Array<FloatArray>>> {
@@ -205,7 +236,7 @@ class MainActivity: FlutterActivity() {
         val file:File =  File(path);
         try {
             val out: FileOutputStream =  FileOutputStream(file);
-            if (bitmap.compress(Bitmap.CompressFormat.JPEG, 90, out)) {
+            if (bitmap.compress(Bitmap.CompressFormat.PNG, 100, out)) {
                 out.flush();
                 out.close();
             }

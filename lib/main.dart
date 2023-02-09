@@ -107,7 +107,6 @@ class _MyHomePageState extends State<MyHomePage> {
       final String result = await platform.invokeMethod(
         'huawei_segment',
         <String, dynamic>{
-          'model_path': '$documentsPath/u2netp_v7.ptl',
           'image_data': imageData.buffer
               .asUint8List(imageData.offsetInBytes, imageData.lengthInBytes),
           'data_offset': imageData.offsetInBytes,
@@ -151,16 +150,13 @@ class _MyHomePageState extends State<MyHomePage> {
 
   Widget buildImage() {
     if (imagePath != "") {
-      // return Container(
-      //   padding: EdgeInsets.all(8),
-      //   color: Colors.red,
-      //   child: WidgetMask(
-      //       blendMode: BlendMode.darken,
-      //       childSaveLayer: true,
-      //       child: Image.file(File(imagePath)),
-      //       mask: Image.asset("assets/man.jpeg")),
-      // );
-      return Image.file(File(imagePath));
+      return Container(
+        color: Colors.yellow,
+        child: Image.file(
+          File(imagePath),
+          height: 500,
+        ),
+      );
     } else {
       return SizedBox.shrink();
     }
