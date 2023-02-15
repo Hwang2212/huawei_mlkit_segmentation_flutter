@@ -88,12 +88,6 @@ dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
     implementation 'com.android.support:multidex:2.0.1'
 
-    //Pytorch Configuration
-    // implementation 'org.pytorch:pytorch_android:1.9.0'
-    implementation 'org.pytorch:pytorch_android_lite:1.12.1'
-    // implementation 'org.pytorch:pytorch_android_torchvision:1.9.0'
-    implementation 'org.pytorch:pytorch_android_torchvision_lite:1.12.1'
-    // implementation 'com.facebook.soloader:nativeloader:0.10.0'
 
     //Huawei ML Kit = Same as ID Photo by Peace Developers
     //AGC Core
