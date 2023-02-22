@@ -38,6 +38,7 @@ dependencies:
   cupertino_icons: ^1.0.2
   path_provider: ^2.0.12
   widget_mask: ^1.0.0+0
+  image: ^4.0.15
 
 dev_dependencies:
   flutter_test:

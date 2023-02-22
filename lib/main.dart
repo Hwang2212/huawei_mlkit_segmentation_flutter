@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'dart:io';
 
 import 'package:flutter/services.dart';
+import 'package:image/image.dart' as s;
 
 void main() {
   runApp(const MyApp());
@@ -50,7 +51,9 @@ class _MyHomePageState extends State<MyHomePage> {
   // Use code below
   Future<void> _getHuaweiMLKitSegmentation() async {
     // Convert Image under here to ByteData
-    final ByteData imageData = await rootBundle.load("assets/test.jpeg");
+    final ByteData imageData = await rootBundle.load("assets/people4.jpeg");
+    // final s.Image? imgg = await s.decodeImageFile("assets/woman_small.jpg");
+    // final resized = s.copyResize(imgg!, width: 500, height: 500);
     try {
       final String result = await platform.invokeMethod(
         'huawei_segment',
@@ -85,25 +88,56 @@ class _MyHomePageState extends State<MyHomePage> {
               'You have pushed the button this testy times:',
             ),
             buildImage(),
+            ElevatedButton(
+                onPressed: () {
+                  setState(() {});
+                },
+                child: Text("Reload"))
           ],
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: _getHuaweiMLKitSegmentation,
+        onPressed: () async {
+          await _getHuaweiMLKitSegmentation();
+
+          await Future.delayed(const Duration(seconds: 3));
+          setState(() {});
+          //Future
+        }, //_getHuaweiMLKitSegmentation,
         tooltip: 'Increment',
         child: const Icon(Icons.add),
       ),
     );
   }
 
+  Future<Uint8List> loadData() {
+    File file = File(imagePath);
+    return file.readAsBytes();
+    // Uint8List bytes = file.readAsBytesSync();
+
+    // return bytes;
+  }
+
   Widget buildImage() {
     if (imagePath != "") {
-      return Container(
-        color: Colors.yellow,
-        child: Image.file(
-          File(imagePath),
-          height: 500,
-        ),
+      return FutureBuilder<Uint8List>(
+        future: loadData(),
+        builder: (context, snapshot) {
+          if (!snapshot.hasData) return const SizedBox();
+          return Container(
+            color: Colors.yellow,
+            child: Image.memory(snapshot.data!),
+            // child: Image.file(
+            //   File(imagePath),
+            //   height: 500,
+            // ),
+            // child: Image.asset(
+            //   "assets/temp_bitmap.png",
+            //   height: 500,
+            // ),
+          );
+        },
+        // child:
       );
     } else {
       return SizedBox.shrink();

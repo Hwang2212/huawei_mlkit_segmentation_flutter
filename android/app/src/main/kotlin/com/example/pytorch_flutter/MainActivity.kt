@@ -56,9 +56,9 @@ class MainActivity: FlutterActivity() {
 //
 //                // Use MLImageSegmentationSetting to customize the image segmentation analyzer.
                 var setting = MLImageSegmentationSetting.Factory() // Set whether to support fine segmentation. The value true indicates fine segmentation, and the value false indicates fast segmentation.
-                    .setExact(false) // Set the human body segmentation mode.
+                    .setExact(true) // Set the human body segmentation mode.
                     .setAnalyzerType(MLImageSegmentationSetting.BODY_SEG) // Set returned result types.
-                    .setScene(MLImageSegmentationScene.FOREGROUND_ONLY)
+                    .setScene(MLImageSegmentationScene.ALL)
                     .create()
                 var analyzer = MLAnalyzerFactory.getInstance().getImageSegmentationAnalyzer(setting)
                 val mlFrame = MLFrame.fromBitmap(segbitmap)
@@ -70,7 +70,7 @@ class MainActivity: FlutterActivity() {
                         val outputBitmap:Bitmap = it.getForeground()
 
                         // Change Saved File Image if needed
-                        val rootDirectory : String = getActivity().getFilesDir().toString()+"/temp_bitmap"
+                        val rootDirectory : String = getActivity().getFilesDir().toString()+"/temp_bitmap.png"
                         Log.i("Huawei ML Kit", "Success")
                         result.success(rootDirectory)
 
@@ -95,7 +95,7 @@ class MainActivity: FlutterActivity() {
         val file:File =  File(path);
         try {
             val out: FileOutputStream =  FileOutputStream(file);
-            if (bitmap.compress(Bitmap.CompressFormat.PNG, 100, out)) {
+            if (bitmap.compress(Bitmap.CompressFormat.PNG, 50, out)) {
                 out.flush();
                 out.close();
             }
